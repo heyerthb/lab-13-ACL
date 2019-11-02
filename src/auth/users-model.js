@@ -36,6 +36,17 @@ users.statics.createFromOauth = function(email) {
     });
 
 };
+// With help from Sarah Gilliam///
+users.authenticateToken = function (token){
+  let parsedToken = jwt.verify(token, process.env.SECRET);
+
+  if(Date.now() - parsedToken.generatedAt > (1400.60)){
+    throw new Error ('Token has expired');
+  }
+  let query = {_id: parsedToken.id};
+  return this.findOne(query);
+};
+
 
 users.statics.authenticateBasic = function(auth) {
   let query = {username:auth.username};
@@ -54,8 +65,8 @@ users.methods.generateToken = function() {
   let token = {
     id: this._id,
     role: this.role,
+    issued: Date.now(),
   };
-
   return jwt.sign(token, process.env.SECRET);
 };
 
